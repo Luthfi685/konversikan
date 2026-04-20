@@ -1,0 +1,114 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleTheme()">
+        <ion-icon [name]="themeService.getDarkMode() ? 'sunny-outline' : 'moon-outline'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Decorative Background Elements -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="main-container">
+    <div class="converter-container">
+      <div class="glass-card">
+        <!-- Input Section -->
+        <div class="unit-section">
+          <ion-item lines="none" class="unit-item">
+            <ion-label position="stacked">{{ category === 'shopping' ? 'HARGA ASLI' : 'DARI' }}</ion-label>
+            <ion-select [(ngModel)]="fromUnit" (ionChange)="convert()" *ngIf="category !== 'shopping'">
+              <ion-select-option *ngFor="let u of units" [value]="u">{{ u }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <div class="input-with-button">
+            <ion-input
+              type="number"
+              [(ngModel)]="inputValue"
+              (ionInput)="convert()"
+              [class.large-input]="category !== 'shopping'"
+              placeholder="0"
+            ></ion-input>
+            <ion-button fill="clear" (click)="fileInput.click()" *ngIf="category === 'shopping'" class="scan-btn">
+              <ion-icon name="camera-outline"></ion-icon>
+            </ion-button>
+            <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" capture="environment" style="display: none">
+          </div>
+        </div>
+
+        <!-- Extra Shopping Inputs -->
+        <div class="extra-inputs" *ngIf="category === 'shopping'">
+          <div class="input-row">
+            <div class="input-group">
+              <ion-label>DISKON (%)</ion-label>
+              <ion-input type="number" [(ngModel)]="discount" (ionInput)="convert()" placeholder="0"></ion-input>
+            </div>
+            <div class="input-group">
+              <ion-label>PAJAK (%)</ion-label>
+              <ion-input type="number" [(ngModel)]="tax" (ionInput)="convert()" placeholder="0"></ion-input>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extra Health Inputs -->
+        <div class="extra-inputs" *ngIf="category === 'health'">
+          <div class="input-group">
+            <ion-label>TINGGI BADAN (CM)</ion-label>
+            <ion-input type="number" [(ngModel)]="height" (ionInput)="convert()" placeholder="0"></ion-input>
+          </div>
+        </div>
+
+        <!-- Divider / Swap -->
+        <div class="divider" *ngIf="category !== 'shopping' && category !== 'health'">
+          <div class="line"></div>
+          <ion-button fill="clear" (click)="swap()" class="swap-btn">
+            <ion-icon name="swap-vertical-outline"></ion-icon>
+          </ion-button>
+          <div class="line"></div>
+        </div>
+
+        <!-- Output Section -->
+        <div class="unit-section">
+          <ion-item lines="none" class="unit-item" *ngIf="category !== 'shopping'">
+            <ion-label position="stacked">KE</ion-label>
+            <ion-select [(ngModel)]="toUnit" (ionChange)="convert()">
+              <ion-select-option *ngFor="let u of units" [value]="u">{{ u }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <div class="result-display" [class.loading]="isLoading">
+            <span class="currency-label" *ngIf="category === 'shopping'">Harga Akhir:</span>
+            <span class="currency-label" *ngIf="category === 'health'">Skor BMI:</span>
+            {{ isLoading ? '...' : (outputValue | number:'1.0-1') }}
+          </div>
+          
+          <div class="status-badge" *ngIf="category === 'health' && outputValue > 0" [style.background]="healthStatus?.color">
+            {{ healthStatus?.label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note" *ngIf="category === 'currency'">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <p>Data kurs diperbarui secara real-time via API.</p>
+      </div>
+
+      <!-- Trend Chart Section -->
+      <div class="chart-container-outer" [hidden]="category !== 'currency'">
+        <div class="chart-header">
+          <h3>Tren 7 Hari Terakhir</h3>
+        </div>
+        <div class="chart-wrapper">
+          <canvas #trendChart></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
