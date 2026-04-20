@@ -15,6 +15,10 @@ const routes: Routes = [
     path: 'converter',
     loadChildren: () => import('./converter/converter.module').then( m => m.ConverterPageModule)
   },
+  {
+    path: 'profile',
+    loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
+  },
 ];
 
 @NgModule({

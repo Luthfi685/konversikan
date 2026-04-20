@@ -1,0 +1,58 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Kembali"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Profil Saya</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="profile-container">
+    <div class="avatar-section">
+      <div class="avatar-circle">
+        <ion-icon name="person"></ion-icon>
+      </div>
+      <h2>{{ userName || 'Guest' }}</h2>
+      <p style="text-align: center;">{{ userBio }}</p>
+    </div>
+
+    <div class="glass-card settings-card">
+      <h3 class="section-title">Edit Profil</h3>
+      <ion-item lines="none" class="input-item">
+        <ion-label position="stacked">Nama Panggilan</ion-label>
+        <ion-input [(ngModel)]="userName" (ionChange)="saveProfile()" placeholder="Masukkan nama panggilan..."></ion-input>
+      </ion-item>
+      
+      <ion-item lines="none" class="input-item">
+        <ion-label position="stacked">Bio Singkat</ion-label>
+        <ion-input [(ngModel)]="userBio" (ionChange)="saveProfile()" placeholder="Motivasi hari ini..."></ion-input>
+      </ion-item>
+    </div>
+
+    <div class="glass-card settings-card mt-3">
+      <h3 class="section-title">Pengaturan Aplikasi</h3>
+      <ion-item lines="none" class="setting-item">
+        <div slot="start" class="s-icon" style="background: rgba(79, 70, 229, 0.2); color: #4f46e5;">
+          <ion-icon name="moon"></ion-icon>
+        </div>
+        <ion-label>Mode Gelap</ion-label>
+        <ion-toggle slot="end" [checked]="themeService.getDarkMode()" (ionChange)="themeService.toggleTheme()"></ion-toggle>
+      </ion-item>
+      
+      <ion-item lines="none" class="setting-item">
+        <div slot="start" class="s-icon" style="background: rgba(45, 211, 111, 0.2); color: #2dd36f;">
+          <ion-icon name="information-circle"></ion-icon>
+        </div>
+        <ion-label>
+          Versi Aplikasi
+          <p>Konversikan v1.0</p>
+        </ion-label>
+      </ion-item>
+    </div>
+  </div>
+</ion-content>

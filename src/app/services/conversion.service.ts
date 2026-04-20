@@ -10,14 +10,24 @@ export class ConversionService {
 
   constructor(private http: HttpClient) {}
 
-  async convert(category: string, from: string, to: string, value: number, extra?: any): Promise<number> {
+  async convert(category: string, from: string, to: string, value: number, extra?: any): Promise<any> {
     if (category === 'currency') {
       return this.convertCurrency(from, to, value);
     }
     if (category === 'health') {
-      return this.calculateBMI(extra?.weight || 0, extra?.height || 0);
+      return {
+        bmi: this.calculateBMI(extra?.weight || 0, extra?.height || 0),
+        water: this.calculateWater(extra?.weight || 0, extra?.activityLevel || 'sedang'),
+        calories: this.calculateCalories(extra?.weight || 0, extra?.activityLevel || 'sedang')
+      };
+    }
+    if (category === 'age') {
+      return this.calculateAgeDetails(extra?.birthDate);
     }
     if (category === 'shopping') {
+      if (extra?.mode === 'splitbill') {
+        return this.calculateItemizedSplitBill(extra?.items || [], extra?.discount || 0, extra?.tax || 0);
+      }
       return this.calculateShopping(value, extra?.discount || 0, extra?.tax || 0);
     }
 
@@ -59,6 +69,22 @@ export class ConversionService {
     const discountedPrice = price - (price * (discount / 100));
     const finalPrice = discountedPrice + (discountedPrice * (tax / 100));
     return finalPrice;
+  }
+
+  private calculateItemizedSplitBill(items: any[], discount: number, tax: number): any[] {
+    const subtotal = items.reduce((sum, item) => sum + (item.price || 0), 0);
+    if (subtotal <= 0) return items.map(item => ({...item, result: 0}));
+
+    const finalSubtotal = subtotal - (subtotal * (discount / 100));
+    const totalWithTax = finalSubtotal + (finalSubtotal * (tax / 100));
+
+    return items.map(item => {
+      const proportion = (item.price || 0) / subtotal;
+      return {
+        ...item,
+        result: proportion * totalWithTax
+      };
+    });
   }
 
   private convertTemperature(from: string, to: string, value: number): number {
@@ -137,6 +163,77 @@ export class ConversionService {
     if (!weight || !height) return 0;
     const heightInMeters = height / 100;
     return weight / (heightInMeters * heightInMeters);
+  }
+
+  private calculateWater(weight: number, activityLevel: string): number {
+    if (!weight) return 0;
+    let multiplier = 0.033; // rendah
+    if (activityLevel === 'sedang') multiplier = 0.040;
+    if (activityLevel === 'tinggi') multiplier = 0.045;
+    return weight * multiplier;
+  }
+
+  private calculateCalories(weight: number, activityLevel: string): number {
+    if (!weight) return 0;
+    let multiplier = 24; // rendah
+    if (activityLevel === 'sedang') multiplier = 30;
+    if (activityLevel === 'tinggi') multiplier = 35;
+    return weight * multiplier;
+  }
+
+  private calculateAgeDetails(birthDateStr: string): any {
+    if (!birthDateStr) return null;
+    const birthDate = new Date(birthDateStr);
+    const today = new Date();
+    
+    // Total days lived
+    const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Years, Months, Days
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    let days = today.getDate() - birthDate.getDate();
+    
+    if (days < 0) {
+      months--;
+      const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      days += lastMonth.getDate();
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+    
+    // Zodiac
+    const day = birthDate.getDate();
+    const month = birthDate.getMonth() + 1;
+    let zodiac = '';
+    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) zodiac = 'Aquarius ♒';
+    else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) zodiac = 'Pisces ♓';
+    else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) zodiac = 'Aries ♈';
+    else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) zodiac = 'Taurus ♉';
+    else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) zodiac = 'Gemini ♊';
+    else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) zodiac = 'Cancer ♋';
+    else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) zodiac = 'Leo ♌';
+    else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) zodiac = 'Virgo ♍';
+    else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) zodiac = 'Libra ♎';
+    else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) zodiac = 'Scorpio ♏';
+    else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) zodiac = 'Sagittarius ♐';
+    else if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) zodiac = 'Capricorn ♑';
+    
+    // Shio (Chinese Zodiac)
+    const index = birthDate.getFullYear() % 12;
+    const shioList = ['Monyet', 'Ayam', 'Anjing', 'Babi', 'Tikus', 'Kerbau', 'Macan', 'Kelinci', 'Naga', 'Ular', 'Kuda', 'Kambing'];
+    const shioEmoji = ['🐒','🐓','🐕','🐖','🐁','🐂','🐅','🐇','🐉','🐍','🐎','🐐'];
+    const shio = shioList[index] + ' ' + shioEmoji[index];
+
+    return {
+      exactAge: `${years} Tahun, ${months} Bulan, ${days} Hari`,
+      totalDays: totalDays,
+      zodiac: zodiac,
+      shio: shio
+    };
   }
 
   getHealthStatus(bmi: number): { label: string, color: string } {

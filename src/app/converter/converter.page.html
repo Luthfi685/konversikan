@@ -20,9 +20,22 @@
 
   <div class="main-container">
     <div class="converter-container">
+
+      <!-- Shopping Modes Segment -->
+      <div class="shopping-segment-container" *ngIf="category === 'shopping'">
+        <ion-segment [(ngModel)]="shoppingMode" (ionChange)="convert()" class="shopping-segment">
+          <ion-segment-button value="calculator">
+            <ion-label>Kalkulator</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="splitbill">
+            <ion-label>Patungan</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
       <div class="glass-card">
         <!-- Input Section -->
-        <div class="unit-section">
+        <div class="unit-section" *ngIf="(category !== 'shopping' || shoppingMode === 'calculator') && category !== 'age'">
           <ion-item lines="none" class="unit-item">
             <ion-label position="stacked">{{ category === 'shopping' ? 'HARGA ASLI' : 'DARI' }}</ion-label>
             <ion-select [(ngModel)]="fromUnit" (ionChange)="convert()" *ngIf="category !== 'shopping'">
@@ -30,22 +43,58 @@
             </ion-select>
           </ion-item>
           <div class="input-with-button">
-            <ion-input
-              type="number"
-              [(ngModel)]="inputValue"
-              (ionInput)="convert()"
-              [class.large-input]="category !== 'shopping'"
-              placeholder="0"
-            ></ion-input>
+            <ion-input type="number" [(ngModel)]="inputValue" (ionInput)="convert()"
+              [class.large-input]="category !== 'shopping'" placeholder="0"></ion-input>
             <ion-button fill="clear" (click)="fileInput.click()" *ngIf="category === 'shopping'" class="scan-btn">
               <ion-icon name="camera-outline"></ion-icon>
             </ion-button>
-            <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" capture="environment" style="display: none">
+            <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" capture="environment"
+              style="display: none">
+          </div>
+        </div>
+
+        <!-- Extra Split Bill Inputs -->
+        <div class="split-bill-section" *ngIf="category === 'shopping' && shoppingMode === 'splitbill'">
+          <div class="split-items-list">
+            <div class="split-item-row" *ngFor="let item of splitItems; let i = index">
+              <ion-input [(ngModel)]="item.name" (ionInput)="convert()" class="name-input"></ion-input>
+              <ion-input type="number" [(ngModel)]="item.price" (ionInput)="convert()" class="price-input"
+                placeholder="Rp 0"></ion-input>
+              <ion-button fill="clear" color="danger" (click)="removeSplitItem(i)" *ngIf="splitItems.length > 1">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <ion-button fill="outline" expand="block" (click)="addSplitItem()" class="add-btn">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Tambah Orang
+          </ion-button>
+
+          <div class="extra-inputs">
+            <div class="input-row">
+              <div class="input-group">
+                <ion-label>DISKON (%)</ion-label>
+                <ion-input type="number" [(ngModel)]="discount" (ionInput)="convert()" placeholder="0"></ion-input>
+              </div>
+              <div class="input-group">
+                <ion-label>PAJAK / PPN (%)</ion-label>
+                <ion-input type="number" [(ngModel)]="tax" (ionInput)="convert()" placeholder="0"></ion-input>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extra Age Inputs -->
+        <div class="extra-inputs" *ngIf="category === 'age'">
+          <div class="input-group">
+            <ion-label style="margin-bottom: 8px;">TANGGAL LAHIR</ion-label>
+            <ion-input type="date" [(ngModel)]="birthDate" (ionChange)="convert()" style="font-weight: 700; color: var(--app-text); font-size: 1.2rem; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border: 1px solid var(--card-border);"></ion-input>
           </div>
         </div>
 
         <!-- Extra Shopping Inputs -->
-        <div class="extra-inputs" *ngIf="category === 'shopping'">
+        <div class="extra-inputs" *ngIf="category === 'shopping' && shoppingMode === 'calculator'">
           <div class="input-row">
             <div class="input-group">
               <ion-label>DISKON (%)</ion-label>
@@ -60,14 +109,25 @@
 
         <!-- Extra Health Inputs -->
         <div class="extra-inputs" *ngIf="category === 'health'">
-          <div class="input-group">
-            <ion-label>TINGGI BADAN (CM)</ion-label>
-            <ion-input type="number" [(ngModel)]="height" (ionInput)="convert()" placeholder="0"></ion-input>
+          <div class="input-row">
+            <div class="input-group">
+              <ion-label>TINGGI BDN (CM)</ion-label>
+              <ion-input type="number" [(ngModel)]="height" (ionInput)="convert()" placeholder="0"></ion-input>
+            </div>
+            <div class="input-group">
+              <ion-label>AKTIVITAS</ion-label>
+              <ion-select [(ngModel)]="activityLevel" (ionChange)="convert()" interface="popover"
+                style="--padding-start: 0; font-weight: 700; color: var(--app-text);">
+                <ion-select-option value="rendah">Rendah</ion-select-option>
+                <ion-select-option value="sedang">Sedang</ion-select-option>
+                <ion-select-option value="tinggi">Tinggi</ion-select-option>
+              </ion-select>
+            </div>
           </div>
         </div>
 
         <!-- Divider / Swap -->
-        <div class="divider" *ngIf="category !== 'shopping' && category !== 'health'">
+        <div class="divider" *ngIf="category !== 'shopping' && category !== 'health' && category !== 'splitbill'">
           <div class="line"></div>
           <ion-button fill="clear" (click)="swap()" class="swap-btn">
             <ion-icon name="swap-vertical-outline"></ion-icon>
@@ -76,7 +136,7 @@
         </div>
 
         <!-- Output Section -->
-        <div class="unit-section">
+        <div class="unit-section" *ngIf="(category !== 'shopping' || shoppingMode === 'calculator') && category !== 'age'">
           <ion-item lines="none" class="unit-item" *ngIf="category !== 'shopping'">
             <ion-label position="stacked">KE</ion-label>
             <ion-select [(ngModel)]="toUnit" (ionChange)="convert()">
@@ -88,16 +148,74 @@
             <span class="currency-label" *ngIf="category === 'health'">Skor BMI:</span>
             {{ isLoading ? '...' : (outputValue | number:'1.0-1') }}
           </div>
-          
-          <div class="status-badge" *ngIf="category === 'health' && outputValue > 0" [style.background]="healthStatus?.color">
+
+          <div class="status-badge" *ngIf="category === 'health' && outputValue > 0"
+            [style.background]="healthStatus?.color">
             {{ healthStatus?.label }}
           </div>
-        </div>
-      </div>
 
-      <div class="info-note" *ngIf="category === 'currency'">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        <p>Data kurs diperbarui secara real-time via API.</p>
+          <div class="health-extras" *ngIf="category === 'health' && outputValue > 0">
+            <div class="health-card">
+              <div class="h-icon" style="background: rgba(45, 211, 111, 0.2); color: #2dd36f;">
+                <ion-icon name="water"></ion-icon>
+              </div>
+              <div class="h-data">
+                <p>Kebutuhan Air</p>
+                <h4>{{ waterNeeded | number:'1.1-1' }} L/hari</h4>
+              </div>
+            </div>
+            <div class="health-card">
+              <div class="h-icon" style="background: rgba(255, 152, 0, 0.2); color: #ff9800;">
+                <ion-icon name="flame"></ion-icon>
+              </div>
+              <div class="h-data">
+                <p>Target Kalori</p>
+                <h4>{{ caloriesNeeded | number:'1.0-0' }} kkal</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Section Splitbill -->
+        <div class="unit-section split-results" *ngIf="category === 'shopping' && shoppingMode === 'splitbill'">
+          <div class="result-header">
+            <h3>Hasil Patungan</h3>
+          </div>
+          <div class="result-row" *ngFor="let item of splitItems">
+            <span class="res-name">{{ item.name }}</span>
+            <span class="res-val">{{ item.result | number:'1.0-1' }}</span>
+          </div>
+          <div class="divider">
+            <div class="line"></div>
+          </div>
+          <div class="result-row total-row">
+            <span class="res-name">Total Semua</span>
+            <span class="res-val">{{ outputValue | number:'1.0-1' }}</span>
+          </div>
+        </div>
+
+        <!-- Output Section Age -->
+        <div class="unit-section split-results" *ngIf="category === 'age' && ageResult">
+          <div class="result-header">
+            <h3>Informasi Dirimu</h3>
+          </div>
+          <div class="result-row">
+            <span class="res-name">Umur Persis</span>
+            <span class="res-val" style="color: #f6d365;">{{ ageResult.exactAge }}</span>
+          </div>
+          <div class="result-row">
+            <span class="res-name">Total Hari Hidup</span>
+            <span class="res-val">{{ ageResult.totalDays | number }} Hari</span>
+          </div>
+          <div class="result-row">
+            <span class="res-name">Zodiak</span>
+            <span class="res-val">{{ ageResult.zodiac }}</span>
+          </div>
+          <div class="result-row">
+            <span class="res-name">Shio</span>
+            <span class="res-val">{{ ageResult.shio }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Trend Chart Section -->

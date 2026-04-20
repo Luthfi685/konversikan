@@ -238,3 +238,194 @@ ion-content {
     font-weight: 500;
   }
 }
+
+/* Split Bill Specific Styles */
+.split-bill-section {
+  .split-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .split-item-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px 15px;
+    border-radius: 15px;
+    border: 1px solid var(--card-border);
+    transition: all 0.3s ease;
+    
+    &:focus-within {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .name-input {
+      flex: 1.5;
+      font-weight: 500;
+      --color: var(--app-text);
+      --padding-start: 0;
+    }
+    
+    .price-input {
+      flex: 1;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: right;
+      --color: var(--app-text);
+      --padding-end: 0;
+    }
+
+    ion-button {
+      margin: 0;
+      --padding-start: 0;
+      --padding-end: 0;
+      height: 36px;
+      width: 36px;
+      opacity: 0.8;
+      &:hover { opacity: 1; }
+    }
+  }
+
+  .add-btn {
+    --border-style: dashed;
+    --border-color: rgba(255,255,255,0.4);
+    --border-radius: 15px;
+    --border-width: 2px;
+    --color: var(--app-text);
+    margin-top: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    opacity: 0.8;
+  }
+  
+  .mt-3 {
+    margin-top: 25px;
+  }
+}
+
+.split-results {
+  .result-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--app-text);
+    margin: 0 0 15px 0;
+  }
+  
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    
+    .res-name {
+      color: var(--sub-text);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    
+    .res-val {
+      color: var(--app-text);
+      font-size: 1.1rem;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+    
+    &.total-row {
+      padding-top: 15px;
+      .res-name {
+        color: var(--app-text);
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+      .res-val {
+        font-size: 1.5rem;
+        color: #10b981;
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.shopping-segment-container {
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 5px;
+  backdrop-filter: blur(10px);
+  
+  ion-segment {
+    --background: transparent;
+    border-radius: 10px;
+  }
+  
+  ion-segment-button {
+    --color: rgba(255, 255, 255, 0.6);
+    --color-checked: #fff;
+    --background-checked: rgba(255, 255, 255, 0.2);
+    --indicator-color: transparent;
+    color: var(--app-text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    
+    &::part(indicator-background) {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+    }
+  }
+}
+
+.health-extras {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+  
+  .health-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    transition: transform 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-5px);
+    }
+    
+    .h-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      ion-icon {
+        font-size: 24px;
+      }
+    }
+    
+    .h-data {
+      p {
+        margin: 0 0 5px 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--sub-text);
+      }
+      h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--app-text);
+      }
+    }
+  }
+}

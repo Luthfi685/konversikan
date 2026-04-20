@@ -28,18 +28,27 @@ export class ConverterPage implements OnInit, AfterViewInit {
   isLoading: boolean = false;
 
   unitConfig: any = {
-    currency: { title: 'Mata Uang', units: ['USD', 'IDR', 'EUR', 'JPY', 'SGD', 'MYR'] },
-    temperature: { title: 'Suhu', units: ['C', 'F', 'K'] },
+    currency: { title: 'Mata Uang', units: ['USD', 'IDR', 'EUR', 'JPY', 'GBP', 'AUD', 'SGD', 'MYR', 'THB', 'SAR', 'KRW', 'PHP', 'VND', 'INR', 'CNY', 'NZD', 'CAD', 'CHF', 'HKD', 'SEK', 'ZAR', 'BRL', 'MXN', 'TRY', 'RUB', 'AED', 'TWD'] },
     length: { title: 'Panjang', units: ['mm', 'cm', 'm', 'km', 'inch', 'feet'] },
     weight: { title: 'Berat', units: ['mg', 'g', 'kg', 'oz', 'lb'] },
     shopping: { title: 'Belanja', units: ['Harga'] },
-    health: { title: 'Kesehatan (BMI)', units: ['Berat (kg)'] }
+    health: { title: 'Kesehatan (BMI)', units: ['Berat (kg)'] },
+    age: { title: 'Kalkulator Umur', units: ['Tanggal Lahir'] }
   };
 
+  shoppingMode: 'calculator' | 'splitbill' = 'calculator';
+  splitItems: { id: number, name: string, price: number, result?: number }[] = [
+    { id: 1, name: 'Orang 1', price: null as any }
+  ];
   discount: number = 0;
   tax: number = 0;
   height: number = 0;
+  activityLevel: string = 'sedang';
+  birthDate: string = '';
+  ageResult: any = null;
   healthStatus: any = null;
+  waterNeeded: number = 0;
+  caloriesNeeded: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -65,24 +74,59 @@ export class ConverterPage implements OnInit, AfterViewInit {
     }
   }
 
+  addSplitItem() {
+    this.splitItems.push({ id: Date.now(), name: `Orang ${this.splitItems.length + 1}`, price: null as any });
+    this.convert();
+  }
+
+  removeSplitItem(index: number) {
+    if (this.splitItems.length > 1) {
+      this.splitItems.splice(index, 1);
+      this.convert();
+    }
+  }
+
   async convert() {
-    if (this.inputValue === null || this.inputValue === undefined) {
+    if (this.category !== 'shopping' && (this.inputValue === null || this.inputValue === undefined)) {
       this.outputValue = 0;
       return;
     }
 
     try {
       this.isLoading = true;
-      this.outputValue = await this.conversionService.convert(
-        this.category,
-        this.fromUnit,
-        this.toUnit,
-        this.inputValue,
-        { discount: this.discount, tax: this.tax, weight: this.inputValue, height: this.height }
-      );
-      
-      if (this.category === 'health') {
+      if (this.category === 'shopping' && this.shoppingMode === 'splitbill') {
+        const payload = this.splitItems.map(item => ({ name: item.name, price: item.price || 0 }));
+        const results = await this.conversionService.convert(
+          this.category, '', '', 0,
+          { mode: 'splitbill', items: payload, discount: this.discount || 0, tax: this.tax || 0 }
+        );
+        this.splitItems.forEach((item, i) => item.result = results[i].result);
+        this.outputValue = results.reduce((sum: number, item: any) => sum + item.result, 0);
+      } else if (this.category === 'age') {
+        if (!this.birthDate) return;
+        this.ageResult = await this.conversionService.convert(
+          this.category, '', '', 0, { birthDate: this.birthDate }
+        );
+      } else if (this.category === 'health') {
+        const results = await this.conversionService.convert(
+          this.category,
+          this.fromUnit,
+          this.toUnit,
+          this.inputValue,
+          { weight: this.inputValue, height: this.height, activityLevel: this.activityLevel }
+        );
+        this.outputValue = results.bmi;
+        this.waterNeeded = results.water;
+        this.caloriesNeeded = results.calories;
         this.healthStatus = this.conversionService.getHealthStatus(this.outputValue);
+      } else {
+        this.outputValue = await this.conversionService.convert(
+          this.category,
+          this.fromUnit,
+          this.toUnit,
+          this.inputValue,
+          { mode: 'calculator', discount: this.discount, tax: this.tax }
+        );
       }
     } catch (error) {
       console.error(error);

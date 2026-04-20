@@ -2,8 +2,11 @@
   <ion-toolbar>
     <ion-title>Konversikan</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="toggleTheme()">
+      <ion-button (click)="themeService.toggleTheme()">
         <ion-icon [name]="themeService.getDarkMode() ? 'sunny-outline' : 'moon-outline'"></ion-icon>
+      </ion-button>
+      <ion-button routerLink="/profile" class="profile-btn">
+        <ion-icon name="person-circle-outline" style="font-size: 28px;"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -17,7 +20,8 @@
 
   <div class="main-container">
     <div class="header-section">
-      <h1>Pilih Kategori</h1>
+      <h2 style="margin-bottom: 5px; font-weight: 600; font-size: 1.4rem; color: var(--app-text);" *ngIf="userName">Halo, {{ userName }}! 👋</h2>
+      <h1 [style.marginTop]="userName ? '0' : ''">Pilih Kategori</h1>
       <p>Konversi apapun dalam satu genggaman</p>
     </div>
 
